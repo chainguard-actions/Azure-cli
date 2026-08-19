@@ -11,7 +11,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v2.0.0 | [`v2.0.0`](https://github.com/chainguard-actions/Azure-cli/tree/v2.0.0) | — |
 | v2.1.0 | [`v2.1.0`](https://github.com/chainguard-actions/Azure-cli/tree/v2.1.0) | — |
 | v2.2.0 | [`v2.2.0`](https://github.com/chainguard-actions/Azure-cli/tree/v2.2.0) | — |
-| v3.0.0 | [`v3.0.0`](https://github.com/chainguard-actions/Azure-cli/tree/v3.0.0) | — |
+| v3.0.0 | [`v3.0.0`](https://github.com/chainguard-actions/Azure-cli/tree/v3.0.0) | [`9eb25b8`](https://github.com/Azure/cli/commit/9eb25b8360668fb0ecbafa808d40e2197b2f5f52) |
 
 ## Privacy
 
