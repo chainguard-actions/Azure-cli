@@ -1,0 +1,53 @@
+name: ci-workflow
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test_action_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: azure/login@cb79c773a3cfa27f31f25eb3f677781210c9ce3d # v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20.x"
+
+      - run: npm install --production
+
+      - run: npm i -g ts-node
+      - run: npm install typescript
+
+      - name: Azure CLI Version test
+        env:
+          INPUT_AZCLIVERSION: 2.0.72
+          INPUT_INLINESCRIPT: |
+            az account show
+            az storage -h
+          EXPECTED_TO: pass
+        run: ts-node test/main.test.ts
+      
+      - name: Azure CLI Version Test - Negative
+        env:
+          INPUT_AZCLIVERSION: 0
+          INPUT_INLINESCRIPT: |
+            az account show
+            az storage -h
+          EXPECTED_TO: fail
+        run: ts-node test/main.test.ts
+        
+      - name: Inline Script Test - Negative
+        env:
+          INPUT_AZCLIVERSION: 2.0.72
+          INPUT_INLINESCRIPT: " "
+          EXPECTED_TO: fail
+        run: ts-node test/main.test.ts
