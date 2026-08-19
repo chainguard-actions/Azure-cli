@@ -1,0 +1,45 @@
+on:
+  push:
+    branches:
+      - master
+
+name: build-release
+
+permissions: 
+  contents: write
+
+jobs:
+  build:
+    name: build-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.x"
+
+      - run: sudo npm i -g @vercel/ncc
+
+      - run: npm install 
+
+      - name: Compile files
+        run: |
+          ncc build -C -m src/entrypoint.ts
+
+      - name: Commit Files
+        continue-on-error: true # commit will fail if the code wasn't changed. Prevent the build to fail in this case.
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add dist/index.js -f
+          git commit -m "Add changes"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@881a6320fdb16eb5318c5054f31c218aec2b324c # master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master
