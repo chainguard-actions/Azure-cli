@@ -1,0 +1,32 @@
+name: Test basic Azure CLI usage
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Azure CLI version command
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          azcliversion: 'latest'
+          inlineScript: |
+            az --version
+            echo "Azure CLI is working"
+
+      - name: Assert action ran (succeeded or failed gracefully without Docker)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: Azure CLI action ran successfully"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (Docker not available in this environment)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

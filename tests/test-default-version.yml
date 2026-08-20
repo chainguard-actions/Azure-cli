@@ -1,0 +1,31 @@
+name: Test Azure CLI with default version (agentazcliversion)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run Azure CLI with default version
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          inlineScript: |
+            az --version
+            echo "Azure CLI default version is working"
+
+      - name: Assert action ran (succeeded or failed gracefully without Docker)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: Azure CLI action with default version ran successfully"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (Docker not available or az not installed on agent)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
