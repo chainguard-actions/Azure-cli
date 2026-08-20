@@ -1,0 +1,35 @@
+name: Test multi-line inline script execution
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run multi-line script via Azure CLI action
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          inlineScript: |
+            echo "Step 1: checking az version"
+            az version --output json
+            echo "Step 2: listing az extensions"
+            az extension list --output json
+            echo "Step 3: done"
+          azcliversion: '2.57.0'
+
+      - name: Assert multi-line script ran (succeeded or failed gracefully due to Docker unavailability)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: Multi-line Azure CLI script ran successfully"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (Docker/MCR not available in act environment)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

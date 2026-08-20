@@ -1,0 +1,93 @@
+name: integration-test
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  basic_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@cb79c773a3cfa27f31f25eb3f677781210c9ce3d # v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Specific test - Postive
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az --version
+            az account show --output none
+      
+      - name: Latest version test - Postive
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az --version
+            az account show --output none
+      
+      - name: Default version test - Postive
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          inlineScript: |
+            az --version
+            az account show --output none
+      
+      - name: Invalid Version test - Negative
+        id: test1
+        continue-on-error: true
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          azcliversion: 0
+          inlineScript: |
+            az --version
+      
+      - name: Check Last step failed
+        if: steps.test1.outcome == 'success'
+        uses: actions/github-script@ffc2c79a5b2490bd33e0a41c1de74b877714d736 # v3
+        with:
+          script: |
+            core.setFailed('Last action should fail but not. Please check it.')
+
+      - name: Invalid Script test - Negative
+        id: test2
+        continue-on-error: true
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          azcliversion: latest
+          inlineScript: " "
+
+      - name: Check Last step failed
+        if: steps.test2.outcome == 'success'
+        uses: actions/github-script@ffc2c79a5b2490bd33e0a41c1de74b877714d736 # v3
+        with:
+          script: |
+            core.setFailed('Last action should fail but not. Please check it.')
+
+  os_test:
+    runs-on: windows-latest
+    steps:
+      - uses: azure/login@cb79c773a3cfa27f31f25eb3f677781210c9ce3d # v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Invalid OS - Negative
+        id: test3
+        continue-on-error: true
+        uses: azure/cli@9eb25b8360668fb0ecbafa808d40e2197b2f5f52 # master
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az --version
+
+      - name: Check Last step failed
+        if: steps.test3.outcome == 'success'
+        uses: actions/github-script@ffc2c79a5b2490bd33e0a41c1de74b877714d736 # v3
+        with:
+          script: |
+            core.setFailed('Last action should fail but not. Please check it.')
